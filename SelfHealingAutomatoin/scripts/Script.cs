@@ -19,6 +19,8 @@ namespace SelfHealingAutomatoin.scripts
             RegistrationFormAutoDiscovery objregistrationform = new RegistrationFormAutoDiscovery(page);
             string abc = await objregistrationform.getPageSource();
             Console.WriteLine(abc);
+
+
         }
     }
 }
