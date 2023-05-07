@@ -18,7 +18,7 @@ namespace SelfHealingAutomatoin.pageobjects
         public RegistrationFormAutoDiscovery(IPage pageobject) 
         {
            page = pageobject;
-            //string HTML_SOURCE_CODE =  ;
+            
             documentController = DocumentController.getInstance(getPageSource());
         }
 
@@ -39,7 +39,7 @@ namespace SelfHealingAutomatoin.pageobjects
                 AcceptDownloads = true
             });
             page = await context.NewPageAsync();
-            await page.GotoAsync("https://www.amazon.in/");
+            await page.GotoAsync("C:\\Users\\apatil2\\Desktop\\Element (jsoup Java HTML Parser 1.16.1 API).html");
             return await page.ContentAsync();
         }
         public async Task goToPage()
