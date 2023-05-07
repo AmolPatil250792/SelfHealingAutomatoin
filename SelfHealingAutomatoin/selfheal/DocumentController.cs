@@ -10,6 +10,9 @@ using Supremes.Nodes;
 using System.Xml.Linq;
 using System.Net.Http.Headers;
 using NUnit.Framework;
+using FuzzySharp.Extractor;
+using Microsoft.Playwright;
+using System.Runtime.InteropServices;
 
 namespace SelfHealingAutomatoin.selfheal
 {
@@ -17,29 +20,134 @@ namespace SelfHealingAutomatoin.selfheal
     {
         private static DocumentController documentController;
 
-        private  Task<string> html;
-        private  Document document;
-        private  Dictionary<String, Elements> elements = new Dictionary<string, Elements>();
+        private Task<string> html;
+        private Document document;
+        private Dictionary<string, Elements> elements = new Dictionary<string, Elements>();
 
 
-        public DocumentController(Task<String> html)
+        public DocumentController(Task<string> html)
         {
             this.html = html;
             document = Supremes.Dcsoup.Parse(html.Result);
             elementsByTag();
         }
 
-        public  static DocumentController  getInstance(Task<String> html)
+        public enum Tag
+        {
+            input, button, link, select, radio, checkbox
+
+        }
+
+        public enum Attribute
+        {
+            id, className, name, text, childText, placeholder
+        }
+
+        public static DocumentController getInstance(Task<string> html)
         {
             if (documentController == null) documentController = new DocumentController(html);
             return documentController;
         }
 
-      
-         private void elementsByTag()
-         {
-            
+        public Elements getElementsByTag(string tag)
+        {
+            Elements a = elements[tag];
+            return elements[tag];
         }
 
+        private void elementsByTag()
+        {
+            Type Tags = typeof(Tag);
+
+            foreach (Tag tag in Enum.GetValues(Tags))
+            {
+                elements.Add(tag.ToString(), document.GetElementsByTag(tag.ToString()));
+
+            }
+        }
+
+        public string getLocator(Tag tag, string matcher)
+        {
+
+            // Initialize Result Set
+            int score = 0;
+            Elements tagElements = null;
+
+            // Filter By Element Type
+            if (tag.Equals(Tag.input))
+            {
+                tagElements = elements["input"];
+                Elements checkboxElements = tagElements.Select("input[type!=hidden]");
+                tagElements = checkboxElements;
+                /* List<Element> newList = new List<Element>();
+
+             foreach (Element element in tagElements) 
+             {
+                 if (!element.Attr("type").Equals("hidden")) 
+                 {
+                     checkboxElements.Add(element);                   
+                 }
+             }*/
+            }
+
+            // Fuzzy Search by Inner Text
+            string cssSelector = null;
+            List<string> values = new List<string>();
+            foreach (Element tagElement in tagElements)
+            {
+                values.Add(tagElement.Text);
+            }
+
+            ExtractedResult<string> result = FuzzySharp.Process.ExtractOne(matcher, values);
+            score = result.Score;
+            cssSelector = tagElements[result.Index].CssSelector;
+
+            /*// Fuzzy Search by Label
+            Elements labels = elements["label"];
+            // if (labels != null && !labels.isEmpty()) 
+            if (labels != null)
+            {
+                values = new List<string>();
+                foreach (Element label in labels)
+                {
+                    values.Add(label.Text);
+                }
+
+                result = FuzzySharp.Process.ExtractOne(matcher, values);
+                if (result.Score > score)
+                {
+                    score = result.Score;
+                    string id = labels[result.Index].Attr("for");
+                   // cssSelector = document.Attr("id", id).;
+                }
+            }
+*/
+            // Fuzzy Search by Attribute Value
+            Type attributeType = typeof(Attribute);
+            foreach (Attribute attr in Enum.GetValues(attributeType))
+            {
+                {
+                    values = new List<string>();
+                    foreach (Element tagElement in tagElements)
+                    {
+                        values.Add(tagElement.Attr(attr.ToString()));
+                    }
+                    result = FuzzySharp.Process.ExtractOne(matcher, values);
+                    if (result.Score >= score)
+                    {
+                        score = result.Score;
+                        cssSelector = tagElements[result.Index].CssSelector;
+                        // cssSelector = tagElements[result.getInde].cssSelector();
+                    }
+                }
+                if (cssSelector == null)
+                {
+                    throw new Exception("Element Not Found: " + tag + "=" + matcher);
+                }
+                
+
+            }
+            return cssSelector;
+        }
+        }
     }
-}
