@@ -9,6 +9,7 @@ using Supremes.Select;
 using Supremes.Nodes;
 using System.Xml.Linq;
 using System.Net.Http.Headers;
+using NUnit.Framework;
 
 namespace SelfHealingAutomatoin.selfheal
 {
@@ -35,12 +36,10 @@ namespace SelfHealingAutomatoin.selfheal
         }
 
       
-         private void elementsByTag(Tag abc)
+         private void elementsByTag()
          {
-             foreach (Tag tag in abc.)
-             {
-                 elements.Add(tag.ToString(), document.GetElementsByTag(tag.ToString()));
-             }           
-         }
+            
+        }
+
     }
 }
