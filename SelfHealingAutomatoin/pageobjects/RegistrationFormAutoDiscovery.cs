@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
+using static SelfHealingAutomatoin.selfheal.DocumentController;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SelfHealingAutomatoin.pageobjects
@@ -39,7 +40,7 @@ namespace SelfHealingAutomatoin.pageobjects
                 AcceptDownloads = true
             });
             page = await context.NewPageAsync();
-            await page.GotoAsync("C:\\Users\\apatil2\\Desktop\\Element (jsoup Java HTML Parser 1.16.1 API).html");
+            await page.GotoAsync("C:\\Users\\apatil2\\Desktop\\loginpage.html");
             return await page.ContentAsync();
         }
         public async Task goToPage()
@@ -48,9 +49,9 @@ namespace SelfHealingAutomatoin.pageobjects
             await page.GotoAsync("http://localhost:7800/bootstrap1.html#");
         }
 
-        public async Task enterText(String label, String value)
+        public async Task enterText(string label, string value)
         {
-           // String locator = documentController.getLocator(Tag.input, label);
+            string locator = documentController.getLocator(Tag.input, label);
             //actions.enterText(locator, value);
         }
     }
