@@ -20,10 +20,12 @@ using SelfHealingAutomatoin.pageobjects;
 using System.Configuration;
 using System.Reflection.Emit;
 using System.IO;
+using AventStack.ExtentReports;
+using SelfHealingAutomatoin.scripts;
 
 namespace SelfHealingAutomatoin.selfheal
 {
-    public class DocumentController
+    public class DocumentController : Base
     {
         private static DocumentController documentController;
         public static string folder = Environment.CurrentDirectory + "\\CSharpCornerAuthors.txt";
@@ -95,8 +97,9 @@ namespace SelfHealingAutomatoin.selfheal
             }
         }
 
-        public string getLocator(Tag tag, string matcher)
+        public string getLocator(Tag tag, string matcher, string locatorToDelete = null)
         {
+            test.Log(Status.Info, $"Trying to get locator using Fuzzy Logic since cached locator either not found or did not work for tag : {tag} and label : {matcher}");
 
             // Initialize Result Set
             int score = 0;
@@ -170,7 +173,23 @@ namespace SelfHealingAutomatoin.selfheal
             string key = RegistrationFormAutoDiscovery.flatten(tag, matcher);
 
             string filecontent = key + "|" + cssSelector;
-            File.AppendAllText(folder, filecontent+Environment.NewLine);
+            string[] inventoryData = File.ReadAllLines(folder);
+            List<string> inventoryDataList = inventoryData.ToList();
+            if(locatorToDelete != null)
+            {
+                if (inventoryDataList.Remove(locatorToDelete)) // rewrite file if one item was found and deleted.
+                {
+                    System.IO.File.WriteAllLines(folder, inventoryDataList.ToArray());
+                    File.AppendAllText(folder, filecontent + Environment.NewLine);
+                }
+            }
+            
+            else
+            {
+                File.AppendAllText(folder, filecontent + Environment.NewLine);
+            }
+            
+            test.Log(Status.Info, $"Locator found using Fuzzy Match  : {cssSelector}");
             return cssSelector;
         }
 

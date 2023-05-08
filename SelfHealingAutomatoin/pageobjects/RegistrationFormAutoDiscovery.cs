@@ -12,10 +12,12 @@ using static SelfHealingAutomatoin.selfheal.DocumentController;
 using static System.Net.Mime.MediaTypeNames;
 using System.Configuration;
 using System.Reflection.Emit;
+using SelfHealingAutomatoin.scripts;
+using AventStack.ExtentReports;
 
 namespace SelfHealingAutomatoin.pageobjects
 {
-    public class RegistrationFormAutoDiscovery
+    public class RegistrationFormAutoDiscovery : Base
     {
         protected static IPage page;
         private static DocumentController documentController;
@@ -62,26 +64,39 @@ namespace SelfHealingAutomatoin.pageobjects
         public async Task enterTextWithoutSelfHeal(string label, string value)
         {
             await page.Locator("#" + label).TypeAsync(value);
+            test.Log(Status.Pass, $"UserName entered with locator #{label} without using Self Heal");
         }
 
-        public async Task enterText(string label, string value)
+        public async Task enterTextWithSelfHeal(string label, string value)
         {
             try
             {
                 string catchedElement = RegistrationFormAutoDiscovery.getCachedLocator(Tag.input, label);
-               
+                string key = flatten(Tag.input, label);
                 if (catchedElement != null)
                 {
-                    ILocator element = page.Locator(catchedElement);
-                    await element.FillAsync(value);
+                    try
+                    {
+                        ILocator element = page.Locator(catchedElement);
+                        await element.FillAsync(value);
+                        test.Log(Status.Pass, $"UserName entered using cached locator : {catchedElement}");
+                    }
+                    catch (System.TimeoutException)
+                    {
+                        ILocator element = page.Locator(documentController.getLocator(Tag.input, label, locatorToDelete : $"{key}|{catchedElement}"));
+                        await element.FillAsync(value);
+                        test.Log(Status.Pass, $"UserName entered using Fuzzy Logic locator : {element}");
+                    }
                 }
                 else
                 {
                     ILocator element = page.Locator(documentController.getLocator(Tag.input, label));
                     await element.FillAsync(value);
+                    test.Log(Status.Pass, $"UserName entered using Fuzzy Logic locator : {element}");
                 }
 
                 // return;
+            
             }
             catch (Exception e)
             {
@@ -114,6 +129,8 @@ namespace SelfHealingAutomatoin.pageobjects
          */
         public static string getCachedLocator(Tag tagName, string label)
         {
+
+            test.Log(Status.Info, $"First trying to get locator from cache for tag : {tagName} and label : {label}");
             string key = flatten(tagName, label);
             string returnValue = null;
             if (File.Exists(folder))
@@ -130,7 +147,7 @@ namespace SelfHealingAutomatoin.pageobjects
                     }
                 }
             }
-
+            test.Log(Status.Info, $"Cached locator found : {returnValue}");
             return returnValue;
 
         }
