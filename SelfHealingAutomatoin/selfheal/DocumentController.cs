@@ -12,14 +12,21 @@ using System.Net.Http.Headers;
 using NUnit.Framework;
 using FuzzySharp.Extractor;
 using Microsoft.Playwright;
+using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 using System.Runtime.InteropServices;
+using System.Reflection;
+using SelfHealingAutomatoin.selfheal;
+using SelfHealingAutomatoin.pageobjects;
+using System.Configuration;
+using System.Reflection.Emit;
+using System.IO;
 
 namespace SelfHealingAutomatoin.selfheal
 {
     public class DocumentController
     {
         private static DocumentController documentController;
-
+        public static string folder = Environment.CurrentDirectory + "\\CSharpCornerAuthors.txt";
         private Task<string> html;
         private Document document;
         private Dictionary<string, Elements> elements = new Dictionary<string, Elements>();
@@ -34,8 +41,30 @@ namespace SelfHealingAutomatoin.selfheal
 
         public enum Tag
         {
-            input, button, link, select, radio, checkbox
+            [Description("input")]
+            input,
+            [Description("button")]
+            button,
+            [Description("link")]
+            link,
+            [Description("select")]
+            select,
+            [Description("radio")]
+            radio,
+            [Description("checkbox")]
+            checkbox
 
+        }
+
+        public static string GetEnumDescription(Enum value)
+        {
+            FieldInfo field = value.GetType().GetField(value.ToString());
+            DescriptionAttribute[] array = (DescriptionAttribute[])field.GetCustomAttributes(typeof(DescriptionAttribute), inherit: false);
+            if (array != null && array.Length != 0)
+            {
+                return array[0].Description;
+            }
+            return value.ToString();
         }
 
         public enum Attribute
@@ -78,16 +107,7 @@ namespace SelfHealingAutomatoin.selfheal
             {
                 tagElements = elements["input"];
                 Elements checkboxElements = tagElements.Select("input[type!=hidden]");
-                tagElements = checkboxElements;
-                /* List<Element> newList = new List<Element>();
-
-             foreach (Element element in tagElements) 
-             {
-                 if (!element.Attr("type").Equals("hidden")) 
-                 {
-                     checkboxElements.Add(element);                   
-                 }
-             }*/
+                tagElements = checkboxElements;               
             }
 
             // Fuzzy Search by Inner Text
@@ -147,7 +167,15 @@ namespace SelfHealingAutomatoin.selfheal
                 
 
             }
+            string key = RegistrationFormAutoDiscovery.flatten(tag, matcher);
+
+            string filecontent = key + "|" + cssSelector;
+            File.AppendAllText(folder, filecontent+Environment.NewLine);
             return cssSelector;
         }
+
+
+       
+
         }
     }
