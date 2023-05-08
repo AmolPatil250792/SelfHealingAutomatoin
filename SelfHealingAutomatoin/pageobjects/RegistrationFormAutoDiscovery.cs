@@ -1,13 +1,17 @@
 ﻿using Microsoft.Playwright;
+using NUnit.Framework;
 using SelfHealingAutomatoin.selfheal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using static SelfHealingAutomatoin.selfheal.DocumentController;
 using static System.Net.Mime.MediaTypeNames;
+using System.Configuration;
+using System.Reflection.Emit;
 
 namespace SelfHealingAutomatoin.pageobjects
 {
@@ -16,10 +20,10 @@ namespace SelfHealingAutomatoin.pageobjects
         protected static IPage page;
         private static DocumentController documentController;
 
-        public RegistrationFormAutoDiscovery(IPage pageobject) 
+        public RegistrationFormAutoDiscovery(IPage pageobject)
         {
-           page = pageobject;
-            
+            page = pageobject;
+
             documentController = DocumentController.getInstance(getPageSource());
         }
 
@@ -49,11 +53,95 @@ namespace SelfHealingAutomatoin.pageobjects
             await page.GotoAsync("http://localhost:7800/bootstrap1.html#");
         }
 
-        public async Task enterText(string label, string value)
+        /*public async Task enterText(string label, string value)
         {
             string locator = documentController.getLocator(Tag.input, label);
             //actions.enterText(locator, value);
+        }*/
+
+        public async Task enterTextWithoutSelfHeal(string label, string value)
+        {
+            await page.Locator("#" + label).TypeAsync(value);
         }
+
+        public async Task enterText(string label, string value)
+        {
+            try
+            {
+                string catchedElement = RegistrationFormAutoDiscovery.getCachedLocator(Tag.input, label);
+               
+                if (catchedElement != null)
+                {
+                    ILocator element = page.Locator(catchedElement);
+                    await element.FillAsync(value);
+                }
+                else
+                {
+                    ILocator element = page.Locator(documentController.getLocator(Tag.input, label));
+                    await element.FillAsync(value);
+                }
+
+                // return;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+
+
+
+        }
+
+        /**
+    *   flatten() -- Merge all characteristics into a key to use for the cache
+    *
+    * @param characteristics - The map of characteristics desired to find a specific locator in the DOM
+    * @return - returns an encorded key As a String
+    */
+        public static string flatten(Tag tagname, string labelvalue)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(GetEnumDescription(tagname)).Append(labelvalue);
+            return result.ToString().Replace(" ", "");
+        }
+
+        /**
+         * getCachedLocator - Retrieve a Locator from the Cache
+         * @param characteristics - Used to create a unique key
+         * @return - The locator, should it exist in the cache
+         * @throws CachedLocatorNotFound - If not found
+         */
+        public static string getCachedLocator(Tag tagName, string label)
+        {
+            string key = flatten(tagName, label);
+            string returnValue = null;
+            if (File.Exists(folder))
+            {
+                // Read a text file line by line.
+                string[] lines = File.ReadAllLines(folder);
+                foreach (string line in lines)
+                {
+                    string[] splittedString = line.Split('|');
+                    if (splittedString[0].Equals(key))
+                    {
+                        returnValue = splittedString[1];
+                        break;
+                    }
+                }
+            }
+
+            return returnValue;
+
+        }
+
+
+
+
+
+
+
+
     }
 
 }

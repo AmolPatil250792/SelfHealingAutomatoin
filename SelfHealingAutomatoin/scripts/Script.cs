@@ -18,9 +18,10 @@ namespace SelfHealingAutomatoin.scripts
 
             RegistrationFormAutoDiscovery objregistrationform = new RegistrationFormAutoDiscovery(page);
             string abc = await objregistrationform.getPageSource();
-            await objregistrationform.enterText("Enter your email", "amol");
-            Console.WriteLine(abc);
-
+            //await objregistrationform.enterText("Enter your email", "amol");
+            await objregistrationform.enterText("username", "amol");
+            //await objregistrationform.enterTextWithoutSelfHeal("username", "amol");
+        
 
         }
     }
