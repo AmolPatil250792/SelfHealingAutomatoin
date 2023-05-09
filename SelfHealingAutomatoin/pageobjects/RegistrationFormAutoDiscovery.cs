@@ -25,7 +25,6 @@ namespace SelfHealingAutomatoin.pageobjects
         public RegistrationFormAutoDiscovery(IPage pageobject)
         {
             page = pageobject;
-
             documentController = DocumentController.getInstance(getPageSource());
         }
 
