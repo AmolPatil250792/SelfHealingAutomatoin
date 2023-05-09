@@ -66,6 +66,11 @@ namespace SelfHealingAutomatoin.pageobjects
             test.Log(Status.Pass, $"UserName entered with locator #{label} without using Self Heal");
         }
 
+        public async Task closeBrowser()
+        {
+            await page.CloseAsync();
+        }
+
         public async Task enterTextWithSelfHeal(string label, string value)
         {
             try
