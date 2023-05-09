@@ -44,6 +44,7 @@ namespace SelfHealingAutomatoin.pageobjects
                 ViewportSize = ViewportSize.NoViewport,
                 AcceptDownloads = true
             });
+            context.SetDefaultTimeout(10000);
             page = await context.NewPageAsync();
             await page.GotoAsync("C:\\Users\\apatil2\\Desktop\\loginpage.html");
             return await page.ContentAsync();
