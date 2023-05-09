@@ -146,7 +146,14 @@ namespace SelfHealingAutomatoin.pageobjects
                     }
                 }
             }
-            test.Log(Status.Info, $"Cached locator found : {returnValue}");
+            if(returnValue == null )
+            {
+                test.Log(Status.Info, $"Cached locator not found.");
+            }
+            else
+            {
+                test.Log(Status.Info, $"Cached locator found : {returnValue}");
+            };
             return returnValue;
 
         }
